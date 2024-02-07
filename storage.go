@@ -249,6 +249,10 @@ const (
 )
 
 func (f *file) UploadOrUpdate(path string, data io.Reader, update bool) FileResponse {
+	return f.UploadOrUpdateType(path, data, update, defaultFileContent)
+}
+
+func (f *file) UploadOrUpdateType(path string, data io.Reader, update bool, contentType string) FileResponse {
 	body := bufio.NewReader(data)
 	_path := removeEmptyFolder(f.BucketId + "/" + path)
 	client := &http.Client{}
@@ -274,10 +278,10 @@ func (f *file) UploadOrUpdate(path string, data io.Reader, update bool) FileResp
 
 	injectAuthorizationHeader(req, f.storage.client.apiKey)
 	req.Header.Set("cache-control", defaultFileCacheControl)
-	req.Header.Set("content-type", defaultFileContent)
+	req.Header.Set("content-type", contentType)
 	req.Header.Set("x-upsert", strconv.FormatBool(defaultFileUpsert))
 	if !update {
-		req.Header.Set("content-type", defaultFileContent)
+		req.Header.Set("content-type", contentType)
 	}
 
 	res, err = client.Do(req)
